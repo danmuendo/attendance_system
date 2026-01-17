@@ -1,22 +1,16 @@
 from flask import Flask, render_template, request, redirect, send_file, session, url_for
 import sqlite3
-import datetime
-import qrcode
 import os
 from openpyxl import Workbook
 from functools import wraps
 from datetime import datetime
-from datetime import datetime
 from zoneinfo import ZoneInfo  # Python 3.9+
+import qrcode
 
 app = Flask(__name__)
-app.secret_key = "simple_secret_key"  # change this for production
+app.secret_key = "simple_secret_key"  # Change this for production
 
 DB_NAME = "attendance.db"
-
-# Get today in Nairobi timezone
-today = datetime.now(ZoneInfo("Africa/Nairobi")).date().isoformat()
-time_now = datetime.now(ZoneInfo("Africa/Nairobi")).strftime("%H:%M:%S")
 
 # ---------------- CONFIG ----------------
 TEACHER_USERNAME = "teacher"
@@ -75,12 +69,13 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    today = datetime.date.today().isoformat()
+    # Get today in Nairobi timezone
+    today = datetime.now(ZoneInfo("Africa/Nairobi")).date().isoformat()
 
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    # Attendance today
+    # Today's attendance
     cur.execute("SELECT name, time FROM attendance WHERE date=?", (today,))
     today_records = cur.fetchall()
 
@@ -88,10 +83,9 @@ def dashboard():
     cur.execute("SELECT name, date, time FROM attendance ORDER BY date DESC")
     all_records = cur.fetchall()
 
-    # Statistics for charts
+    # Stats
     cur.execute("SELECT COUNT(DISTINCT name) FROM attendance")
-    total_students = cur.fetchone()[0]
-
+    total_students = cur.fetchone()[0] or 0
     present_today = len(today_records)
     absent_today = total_students - present_today if total_students > 0 else 0
 
@@ -112,7 +106,8 @@ def dashboard():
 @login_required
 def generate_qr():
     os.makedirs("static", exist_ok=True)
-    base_url = request.url_root.rstrip("/")  # dynamic domain
+    # Dynamically generate the QR based on current domain
+    base_url = request.url_root.rstrip("/")
     qr_data = f"{base_url}/mark"
     img = qrcode.make(qr_data)
     img.save("static/qr.png")
@@ -130,11 +125,8 @@ def mark_attendance():
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
 
-        # Block duplicate attendance
-        cur.execute(
-            "SELECT id FROM attendance WHERE name=? AND date=?",
-            (name, today)
-        )
+        # Prevent duplicate attendance
+        cur.execute("SELECT id FROM attendance WHERE name=? AND date=?", (name, today))
         if cur.fetchone():
             conn.close()
             return "<h3>You have already marked attendance today.</h3>"
@@ -151,8 +143,7 @@ def mark_attendance():
 
     return render_template("mark.html", today=today)
 
-
-# ---------------- SUCCESS ----------------
+# ---------------- SUCCESS PAGE ----------------
 @app.route("/success")
 def success():
     return render_template("success.html")
@@ -161,7 +152,7 @@ def success():
 @app.route("/clear_today")
 @login_required
 def clear_today():
-    today = datetime.date.today().isoformat()
+    today = datetime.now(ZoneInfo("Africa/Nairobi")).date().isoformat()
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("DELETE FROM attendance WHERE date=?", (today,))
