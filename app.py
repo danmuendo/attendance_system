@@ -6,13 +6,16 @@ import os
 from openpyxl import Workbook
 from functools import wraps
 from datetime import datetime
+from datetime import datetime
 from zoneinfo import ZoneInfo  # Python 3.9+
 
 app = Flask(__name__)
 app.secret_key = "simple_secret_key"  # change this for production
 
 DB_NAME = "attendance.db"
-# Example for Nairobi timezone
+
+# Get today in Nairobi timezone
+today = datetime.now(ZoneInfo("Africa/Nairobi")).date().isoformat()
 time_now = datetime.now(ZoneInfo("Africa/Nairobi")).strftime("%H:%M:%S")
 
 # ---------------- CONFIG ----------------
