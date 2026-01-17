@@ -5,11 +5,15 @@ import qrcode
 import os
 from openpyxl import Workbook
 from functools import wraps
+from datetime import datetime
+from zoneinfo import ZoneInfo  # Python 3.9+
 
 app = Flask(__name__)
 app.secret_key = "simple_secret_key"  # change this for production
 
 DB_NAME = "attendance.db"
+# Example for Nairobi timezone
+time_now = datetime.now(ZoneInfo("Africa/Nairobi")).strftime("%H:%M:%S")
 
 # ---------------- CONFIG ----------------
 TEACHER_USERNAME = "teacher"
@@ -114,11 +118,11 @@ def generate_qr():
 # ---------------- STUDENT PAGE ----------------
 @app.route("/mark", methods=["GET", "POST"])
 def mark_attendance():
-    today = datetime.date.today().isoformat()
+    today = datetime.now(ZoneInfo("Africa/Nairobi")).date().isoformat()
 
     if request.method == "POST":
         name = request.form["name"].strip()
-        time_now = datetime.datetime.now().strftime("%H:%M:%S")
+        time_now = datetime.now(ZoneInfo("Africa/Nairobi")).strftime("%H:%M:%S")
 
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
@@ -143,6 +147,7 @@ def mark_attendance():
         return redirect("/success")
 
     return render_template("mark.html", today=today)
+
 
 # ---------------- SUCCESS ----------------
 @app.route("/success")
