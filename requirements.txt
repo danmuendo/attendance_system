@@ -1,4 +1,5 @@
 Flask
 qrcode
+Pillow
 openpyxl
 gunicorn
