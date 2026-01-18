@@ -6,236 +6,194 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-/* Global */
 * { box-sizing: border-box; }
 
-body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+}
 
 /* Sidebar */
 .sidebar {
     height: 100vh;
-    width: 220px;
+    width: 230px;
     position: fixed;
     top: 0;
     left: 0;
     background-color: #2c7be5;
     color: white;
-    display: flex;
-    flex-direction: column;
     padding: 20px;
 }
 
-.sidebar h2 { margin-top:0; margin-bottom:20px; font-size:20px; }
+.sidebar h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
 
-.sidebar button {
+.sidebar a {
+    display: block;
     background: white;
     color: #2c7be5;
-    border: none;
+    text-decoration: none;
     border-radius: 8px;
-    padding: 12px 15px;
+    padding: 12px;
     margin-bottom: 12px;
-    font-size: 16px;
     font-weight: bold;
-    cursor: pointer;
-    text-align: left;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    text-align: center;
 }
 
-.sidebar button:hover { background: #e0e7ff; }
-.sidebar button.danger { color:white; background:#d32f2f; }
-.sidebar button.danger:hover { background:#b71c1c; }
-.sidebar button i { margin-right: 10px; }
+/* Main content */
+.main {
+    margin-left: 250px;
+    padding: 20px;
+}
 
-/* Main */
-.main { margin-left:240px; padding:20px 30px; }
-h1 { margin-top:0; }
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 
-/* Sections */
-.section { display:none; margin-top:20px; }
+h3 {
+    margin-top: 0;
+}
 
-/* Cards */
-.card { background:white; padding:20px; border-radius:10px; margin-bottom:20px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+/* Forms */
+input, button {
+    padding: 10px;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
 
-/* Overview cards */
-.overview-cards { display:flex; flex-wrap:wrap; gap:20px; }
-.overview-card { flex:1 1 200px; padding:20px; border-radius:10px; color:white; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1); }
-.students { background:#2c7be5; }
-.records { background:#17a2b8; color:#fff; }
-.latest { background:#ffc107; color:#333; }
-
-/* Tables */
-.table-card { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; margin-top:10px; }
-th, td { padding:12px; border-bottom:1px solid #ddd; text-align:left; }
-th { background:#2c7be5; color:white; }
-tr:nth-child(even){ background:#f9f9f9; }
-
-/* Buttons */
-.button {
-    display: inline-block;
-    margin: 5px 5px 5px 0;
-    padding: 12px 20px;
+button {
     background: #2c7be5;
     color: white;
-    border-radius: 8px;
-    text-decoration: none;
     font-weight: bold;
-    font-size: 16px;
-    border: none;
     cursor: pointer;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    transition: 0.3s;
+    border: none;
 }
 
-.button:hover {
+button:hover {
     background: #1a5dc7;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
-}
-
-.button.danger {
-    background: #d32f2f;
-}
-
-.button.danger:hover {
-    background: #b71c1c;
 }
 
 /* Stats */
-.stats-box { display:flex; flex-wrap:wrap; gap:20px; }
-.stats-card { flex:1 1 200px; background:#17a2b8; color:white; padding:20px; border-radius:10px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1); }
+.stats {
+    display: flex;
+    gap: 20px;
+}
 
-/* Mobile */
-@media(max-width:768px){
-    .sidebar{width:100%; height:auto; position:relative;}
-    .main{margin-left:0; padding:20px 15px;}
-    .overview-cards, .stats-box{flex-direction:column;}
+.stat-box {
+    flex: 1;
+    background: #eef3ff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #f0f0f0;
+}
+
+/* QR */
+.qr {
+    text-align: center;
+}
+
+.qr img {
+    width: 200px;
+    margin-top: 10px;
 }
 </style>
 </head>
+
 <body>
 
+<!-- Sidebar -->
 <div class="sidebar">
-    <h2>📊 Dashboard</h2>
-    <button onclick="showSection('overview')"><i>📌</i> Overview</button>
-    <button onclick="showSection('all')"><i>📋</i> All Attendance</button>
-    <button onclick="showSection('generate')"><i>🖼️</i> Generate QR</button>
-    <button onclick="showSection('export')"><i>📥</i> Export Excel</button>
-    <button onclick="showSection('clear')" class="danger"><i>🗑️</i> Clear Today</button>
-    <button onclick="showSection('stats')"><i>📊</i> Stats</button>
-    <button onclick="window.location='/logout'"><i>🚪</i> Logout</button>
+    <h2>👩‍🏫 Teacher</h2>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('generate_qr') }}">Generate QR</a>
+    <a href="{{ url_for('download_excel') }}">Download Excel</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </div>
 
+<!-- Main -->
 <div class="main">
-    <h1>Teacher Dashboard</h1>
-    <p>Date: <strong>{{ today }}</strong></p>
 
-    <!-- OVERVIEW -->
-    <div id="overview" class="section">
-        <div class="overview-cards">
-            <div class="overview-card students">
-                <h3>Today's Students</h3>
-                <p style="font-size:24px;">{{ today_records|length }}</p>
+    <!-- Stats -->
+    <div class="card">
+        <h3>📊 Today Stats ({{ today }})</h3>
+        <div class="stats">
+            <div class="stat-box">
+                <strong>Total Students</strong><br>
+                {{ total_students }}
             </div>
-            <div class="overview-card records">
-                <h3>Total Records</h3>
-                <p style="font-size:24px;">{{ all_records|length }}</p>
-            </div>
-            <div class="overview-card latest">
-                <h3>Latest 5 Entries</h3>
-                <ul>
-                    {% for name, time in today_records[-5:] %}
-                        <li>{{ name }} - {{ time }}</li>
-                    {% else %}
-                        <li>No attendance yet</li>
-                    {% endfor %}
-                </ul>
+            <div class="stat-box">
+                <strong>Present Today</strong><br>
+                {{ present_today }}
             </div>
         </div>
     </div>
 
-    <!-- ALL ATTENDANCE -->
-    <div id="all" class="section">
-        <div class="card table-card">
-            <h2>All Attendance Records</h2>
-            <table>
-                <tr><th>Name</th><th>Date</th><th>Time</th></tr>
-                {% for name, date, time in all_records %}
-                <tr><td>{{ name }}</td><td>{{ date }}</td><td>{{ time }}</td></tr>
-                {% endfor %}
-            </table>
-        </div>
+    <!-- Add Student -->
+    <div class="card">
+        <h3>➕ Add New Student</h3>
+        <form method="POST" action="{{ url_for('add_student') }}">
+            <input type="text" name="name" placeholder="Student full name" required>
+            <button type="submit">Add Student</button>
+        </form>
     </div>
 
-    <!-- GENERATE QR -->
-    <div id="generate" class="section">
-        <div class="card">
-            <h2>Generate QR Code</h2>
-            <div class="actions">
-                <a href="/generate" class="button">Generate QR</a>
-            </div>
-
-            <!-- QR image -->
-            <div id="qr-print" style="margin-top:20px; text-align:center;">
-                <img id="qr-image" src="/static/qr.png" alt="QR Code">
-            </div>
-
-            <!-- Download QR below image -->
-            <div style="margin-top:10px; text-align:center;">
-                <a id="download-qr" href="/static/qr.png" download="attendance_qr.png" class="button">💾 Download QR Code</a>
-            </div>
-        </div>
+    <!-- QR Code -->
+    <div class="card qr">
+        <h3>📱 Attendance QR Code</h3>
+        <img src="{{ url_for('static', filename='qr.png') }}" alt="QR Code">
+        <p>Students scan to mark attendance</p>
     </div>
 
-    <!-- EXPORT -->
-    <div id="export" class="section">
-        <div class="card">
-            <h2>Export Attendance</h2>
-            <a href="/export" class="button">📥 Download Excel</a>
-        </div>
-    </div>
+    <!-- Attendance Table -->
+    <div class="card">
+        <h3>📋 Attendance Today</h3>
 
-    <!-- CLEAR -->
-    <div id="clear" class="section">
-        <div class="card">
-            <h2>Clear Today's Attendance</h2>
-            <a href="/clear_today" class="button danger">🗑️ Clear Today</a>
-        </div>
-    </div>
-
-    <!-- STATS -->
-    <div id="stats" class="section">
-        <div class="stats-box">
-            <div class="stats-card">
-                <h3>Today's Attendance</h3>
-                <p style="font-size:24px;">{{ today_records|length }}</p>
-            </div>
-            <div class="stats-card">
-                <h3>Total Records</h3>
-                <p style="font-size:24px;">{{ all_records|length }}</p>
-            </div>
-            <div class="stats-card">
-                <h3>Attendance % Today</h3>
-                {% set percent = (today_records|length / (all_records|length if all_records|length>0 else 1)*100) | round(1) %}
-                <p style="font-size:24px;">{{ percent }}%</p>
-            </div>
-        </div>
+        {% if records %}
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Time</th>
+            </tr>
+            {% for r in records %}
+            <tr>
+                <td>{{ r[0] }}</td>
+                <td>{{ r[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>No attendance recorded today.</p>
+        {% endif %}
     </div>
 
 </div>
-
-<script>
-// Toggle sections
-function showSection(id){
-    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-    document.getElementById(id).style.display='block';
-}
-
-// Show overview by default
-showSection('overview');
-</script>
 
 </body>
 </html>
