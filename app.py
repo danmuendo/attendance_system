@@ -107,26 +107,18 @@ def dashboard():
     )
 
 # ---------------- ADD STUDENT ----------------
-@app.route("/students", methods=["GET", "POST"])
+@app.route("/add_student", methods=["POST"])
 @login_required
-def manage_students():
+def add_student():
+    name = request.form["name"].strip()
+    # Optional: check if student already exists
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-
-    if request.method == "POST":
-        name = request.form["name"].strip()
-
-        try:
-            cur.execute("INSERT INTO students (name) VALUES (?)", (name,))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            pass  # prevents duplicates
-
-    cur.execute("SELECT name FROM students ORDER BY name")
-    students = cur.fetchall()
+    cur.execute("INSERT INTO students (name) VALUES (?)", (name,))
+    conn.commit()
     conn.close()
+    return redirect("/dashboard")
 
-    return render_template("students.html", students=students)
 
 # ---------------- GENERATE QR ----------------
 @app.route("/generate")
