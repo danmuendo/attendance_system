@@ -134,12 +134,16 @@ def add_student():
 @app.route("/generate")
 @login_required
 def generate_qr():
-    os.makedirs("static", exist_ok=True)
+    static_dir = os.path.join(app.root_path, "static")
+    os.makedirs(static_dir, exist_ok=True)
+
     base_url = request.url_root.rstrip("/")
     qr_data = f"{base_url}/mark"
+
     img = qrcode.make(qr_data)
-    img.save("static/qr.png")
-    return redirect("/dashboard")
+    img.save(os.path.join(static_dir, "qr.png"))
+
+    return redirect(url_for("dashboard"))
 
 # ---------------- MARK ATTENDANCE ----------------
 @app.route("/mark", methods=["GET", "POST"])
