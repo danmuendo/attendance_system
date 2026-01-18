@@ -113,7 +113,7 @@ def dashboard():
     )
 
 # ---------------- ADD STUDENT ----------------
-@app.route("/students", methods=["POST"])
+@app.route("/manage_students", methods=["POST"])
 @login_required
 def add_student():
     name = request.form["name"].strip()
