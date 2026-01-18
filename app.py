@@ -1,34 +1,24 @@
 from flask import Flask, render_template, request, redirect, send_file, session, url_for
 import sqlite3
+import datetime
+import qrcode
 import os
 from openpyxl import Workbook
 from functools import wraps
-from datetime import datetime
-from zoneinfo import ZoneInfo
-import qrcode
 
 app = Flask(__name__)
-app.secret_key = "simple_secret_key"
+app.secret_key = "simple_secret_key"  # change this in production
 
 DB_NAME = "attendance.db"
 
 # ---------------- CONFIG ----------------
 TEACHER_USERNAME = "teacher"
 TEACHER_PASSWORD = "1234"
-TIMEZONE = ZoneInfo("Africa/Nairobi")
 
 # ---------------- DB INIT ----------------
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-
-    # Students table
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE
-        )
-    """)
 
     # Attendance table
     cur.execute("""
@@ -37,6 +27,14 @@ def init_db():
             name TEXT,
             date TEXT,
             time TEXT
+        )
+    """)
+
+    # Students table
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE
         )
     """)
 
@@ -60,14 +58,11 @@ def login_required(f):
 def login():
     error = None
     if request.method == "POST":
-        if (
-            request.form["username"] == TEACHER_USERNAME
-            and request.form["password"] == TEACHER_PASSWORD
-        ):
+        if request.form["username"] == TEACHER_USERNAME and request.form["password"] == TEACHER_PASSWORD:
             session["logged_in"] = True
             return redirect("/dashboard")
-        error = "Invalid login"
-
+        else:
+            error = "Invalid login details"
     return render_template("login.html", error=error)
 
 # ---------------- LOGOUT ----------------
@@ -80,19 +75,29 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    today = datetime.now(TIMEZONE).date().isoformat()
+    today = datetime.date.today().isoformat()
 
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
+    # Today's attendance
     cur.execute("SELECT name, time FROM attendance WHERE date=?", (today,))
     today_records = cur.fetchall()
 
+    # All attendance
     cur.execute("SELECT name, date, time FROM attendance ORDER BY date DESC")
     all_records = cur.fetchall()
 
-    cur.execute("SELECT COUNT(*) FROM students")
+    # Student list
+    cur.execute("SELECT id, name FROM students ORDER BY name")
+    students = cur.fetchall()
+
+    # Stats
+    cur.execute("SELECT COUNT(DISTINCT name) FROM attendance")
     total_students = cur.fetchone()[0]
+
+    present_today = len(today_records)
+    absent_today = max(total_students - present_today, 0)
 
     conn.close()
 
@@ -101,24 +106,29 @@ def dashboard():
         today=today,
         today_records=today_records,
         all_records=all_records,
+        students=students,
         total_students=total_students,
-        present_today=len(today_records),
-        absent_today=total_students - len(today_records)
+        present_today=present_today,
+        absent_today=absent_today
     )
 
 # ---------------- ADD STUDENT ----------------
-@app.route("/add_student", methods=["POST"])
+@app.route("/students", methods=["POST"])
 @login_required
 def add_student():
     name = request.form["name"].strip()
-    # Optional: check if student already exists
-    conn = sqlite3.connect(DB_NAME)
-    cur = conn.cursor()
-    cur.execute("INSERT INTO students (name) VALUES (?)", (name,))
-    conn.commit()
-    conn.close()
-    return redirect("/dashboard")
 
+    if name:
+        conn = sqlite3.connect(DB_NAME)
+        cur = conn.cursor()
+        try:
+            cur.execute("INSERT INTO students (name) VALUES (?)", (name,))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass  # student already exists
+        conn.close()
+
+    return redirect("/dashboard")
 
 # ---------------- GENERATE QR ----------------
 @app.route("/generate")
@@ -134,27 +144,24 @@ def generate_qr():
 # ---------------- MARK ATTENDANCE ----------------
 @app.route("/mark", methods=["GET", "POST"])
 def mark_attendance():
-    today = datetime.now(TIMEZONE).date().isoformat()
+    today = datetime.date.today().isoformat()
 
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    # Get registered students
+    # Fetch students for dropdown (optional)
     cur.execute("SELECT name FROM students ORDER BY name")
     students = [s[0] for s in cur.fetchall()]
 
     if request.method == "POST":
-        name = request.form["name"]
-        time_now = datetime.now(TIMEZONE).strftime("%H:%M:%S")
+        name = request.form["name"].strip()
+        time_now = datetime.datetime.now().strftime("%H:%M:%S")
 
-        # Check duplicate
-        cur.execute(
-            "SELECT id FROM attendance WHERE name=? AND date=?",
-            (name, today)
-        )
+        # Prevent duplicate
+        cur.execute("SELECT id FROM attendance WHERE name=? AND date=?", (name, today))
         if cur.fetchone():
             conn.close()
-            return "<h3>Attendance already marked today.</h3>"
+            return "<h3>You have already marked attendance today.</h3>"
 
         cur.execute(
             "INSERT INTO attendance (name, date, time) VALUES (?, ?, ?)",
@@ -176,7 +183,7 @@ def success():
 @app.route("/clear_today")
 @login_required
 def clear_today():
-    today = datetime.now(TIMEZONE).date().isoformat()
+    today = datetime.date.today().isoformat()
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("DELETE FROM attendance WHERE date=?", (today,))
