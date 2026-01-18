@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-/* --- SAME CSS AS YOUR FILE (UNCHANGED) --- */
 * { box-sizing: border-box; }
 body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
+
 .sidebar {
     height: 100vh;
     width: 220px;
@@ -21,7 +21,9 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
     flex-direction: column;
     padding: 20px;
 }
+
 .sidebar h2 { margin-top:0; margin-bottom:20px; font-size:20px; }
+
 .sidebar button {
     background: white;
     color: #2c7be5;
@@ -33,13 +35,27 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
     font-weight: bold;
     cursor: pointer;
     text-align: left;
-    display: flex;
-    align-items: center;
 }
-.sidebar button.danger { background:#d32f2f; color:white; }
-.main { margin-left:240px; padding:20px 30px; }
+
+.sidebar button.danger {
+    background:#d32f2f;
+    color:white;
+}
+
+.main {
+    margin-left:240px;
+    padding:20px 30px;
+}
+
 .section { display:none; margin-top:20px; }
-.card { background:white; padding:20px; border-radius:10px; margin-bottom:20px; }
+
+.card {
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
 .button {
     padding:12px 20px;
     background:#2c7be5;
@@ -49,6 +65,7 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
     cursor:pointer;
     font-weight:bold;
 }
+
 .button.danger { background:#d32f2f; }
 </style>
 </head>
@@ -85,7 +102,11 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
         <table width="100%">
             <tr><th>Name</th><th>Date</th><th>Time</th></tr>
             {% for name, date, time in all_records %}
-            <tr><td>{{ name }}</td><td>{{ date }}</td><td>{{ time }}</td></tr>
+            <tr>
+                <td>{{ name }}</td>
+                <td>{{ date }}</td>
+                <td>{{ time }}</td>
+            </tr>
             {% endfor %}
         </table>
     </div>
@@ -96,7 +117,8 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
     <div class="card">
         <h2>Manage Students</h2>
 
-        <form method="POST" action="{{ url_for('students') }}">
+        <!-- ✅ FIXED ENDPOINT -->
+        <form method="POST" action="{{ url_for('add_student') }}">
             <input name="name" placeholder="Student name" required>
             <button class="button">➕ Add Student</button>
         </form>
@@ -104,7 +126,10 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
         <table width="100%" style="margin-top:15px;">
             <tr><th>ID</th><th>Name</th></tr>
             {% for s in students %}
-            <tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td></tr>
+            <tr>
+                <td>{{ s[0] }}</td>
+                <td>{{ s[1] }}</td>
+            </tr>
             {% endfor %}
         </table>
     </div>
@@ -115,8 +140,9 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
     <div class="card" style="text-align:center;">
         <h2>Generate Attendance QR</h2>
 
-        <!-- ✅ FIX: GENERATE BUTTON -->
-        <a href="{{ url_for('generate_qr') }}" class="button">🖼️ Generate QR Code</a>
+        <a href="{{ url_for('generate_qr') }}" class="button">
+            🖼️ Generate QR Code
+        </a>
 
         {% if qr_exists %}
             <div style="margin-top:20px;">
@@ -137,14 +163,18 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
 <!-- EXPORT -->
 <div id="export" class="section">
     <div class="card">
-        <a href="{{ url_for('export_excel') }}" class="button">📥 Download Excel</a>
+        <a href="{{ url_for('export_excel') }}" class="button">
+            📥 Download Excel
+        </a>
     </div>
 </div>
 
 <!-- CLEAR -->
 <div id="clear" class="section">
     <div class="card">
-        <a href="{{ url_for('clear_today') }}" class="button danger">🗑️ Clear Today</a>
+        <a href="{{ url_for('clear_today') }}" class="button danger">
+            🗑️ Clear Today
+        </a>
     </div>
 </div>
 
@@ -152,7 +182,7 @@ body { font-family: Arial, sans-serif; margin:0; background: #f4f6f8; }
 
 <script>
 function showSection(id){
-    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById(id).style.display='block';
 }
 showSection('overview');
